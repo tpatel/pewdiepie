@@ -1,0 +1,191 @@
+<!DOCTYPE>
+<html>
+<head>
+	<meta name="charset" content="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>PewDiePie - vote rankings</title>
+	<link href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css" rel="stylesheet" type="text/css">
+	<link href="//fonts.googleapis.com/css?family=Roboto:100,300,400,700" rel="stylesheet" type="text/css">
+	<style>
+		html, body {
+			font-family: Robot, sans-serif;
+			font-size: 15px;
+			color: #1c3242;
+			background-color: #e3ded8;
+			font-weight: 100;
+		}
+		html {
+			padding: 0 5px;
+		}
+		body {
+			max-width: 800px;
+			margin: 0 auto;
+			background-color;
+		}
+		h1, h2, h3 {
+			margin: 0;
+			font-weight: 100;
+		}
+		h1 {
+			font-size: 28px;
+			text-align: center;
+		}
+		h2 {
+			font-size: 18px;
+		}
+		a {
+			text-decoration: none;
+			color: #1c3242;
+		}
+		#banner {
+			padding: 10px 0 30px;
+		}
+		#banner img {
+			vertical-align: middle;
+			width: 50px;
+		}
+		.video {
+			margin-bottom: 40px;
+			padding-right: 10px;
+			transition: background-color .6s cubic-bezier(0.215, 0.61, 0.355, 1);
+			-webkit-transition: background-color .6s cubic-bezier(0.215, 0.61, 0.355, 1);
+		}
+		.video:hover {
+			background-color: #eee8e2;
+		}
+		.video:after {
+			content:"";
+			clear:both;
+		}
+		.video img {
+			float:left;
+		}
+		.details {
+			padding: 10px 5px;
+			margin-left: 150px;
+		}
+		.vote {
+			color: #09bce0;
+		}
+		
+		.gotovote {
+			float:right;
+			display: none;
+			font-size: 20px;
+		}
+		.video:hover .gotovote {
+			display: block;
+		}
+		
+		.em {
+			font-weight: 400;
+		}
+		.video:nth-child(3) {
+			margin-bottom: 60px;
+		}
+		#footer {
+			font-size: 13px;
+			text-align: center;
+			padding: 10px 10px 30px;
+		}
+		
+		#votevideo {
+			padding: 0 0 30px;
+			max-width: 640px;
+			margin: 0 auto;
+		}
+		
+		.videoWrapper {
+			position: relative;
+			padding-bottom: 56.25%; /* 16:9 */
+			padding-top: 25px;
+			height: 0;
+		}
+		.videoWrapper iframe {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+</head>
+<body>
+	
+	<div id="banner"><h1><img src="https://yt3.ggpht.com/-rJq9gk1QIis/AAAAAAAAAAI/AAAAAAAAAAA/Kx4wkvKOfxY/s88-c-k-no/photo.jpg" /> PewDiePie - vote rankings</h1></div>
+	
+	<div id="votevideo"><div class="videoWrapper"><iframe width="640" height="360" src="//www.youtube.com/embed/tNE65Vg1OEM?rel=0" frameborder="0" allowfullscreen></iframe></div></div>
+	
+	<div id="content"><h2>Loading...</h2></div>
+	
+	<div id="footer">
+		<p>All videos have been made by <a href="https://www.youtube.com/user/PewDiePie" class="em">PewDiePie</a>. Page made by <a href="https://twitter.com/thibpat" class="em">@thibpat</a>.</p>
+	</div>
+
+
+	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script>
+	var ids = {
+		'TpcYSl0k6jQ': "Corpse Party: Book of Shadows",
+		'u8dVLzfxWgs': "Murdered: Souls Suspect",
+		'bVz7OKCQVts': "Dramatical Murder",
+		'Ic1eQF4bg4o': "The Last of Us: Remastered",
+		'21pZ60HjDGQ': "Dark Souls II DLC",
+		'EigaYC3kTIk': "Infamous: Second Son"
+	};
+	function getVideoUrl(id) {
+		return 'https://gdata.youtube.com/feeds/api/videos/'+id+'?v=2&alt=json';
+	}
+	var videos = [];
+	for(var i in ids) {
+		getUrl(i, ids[i]);
+	}
+	var htmlContent = $('#content');
+	function template(data) {
+		var id = data.entry.id.$t.split(':');
+		id = id[id.length-1];
+		$('<div>')
+			.addClass('video')
+			.append($('<a>')
+				.attr('href', 'https://www.youtube.com/watch?v=' + id)
+				.append($('<img>').attr('src', data.entry.media$group.media$thumbnail[4].url))
+				.append($('<div>')
+					.addClass('details')
+					.append(
+						$('<h2>').text(data.entry.title.$t.substr(11))
+					)
+					.append(
+						$('<p>').text('Votes ').append(
+							$('<span>').attr('id', id).addClass('vote').addClass('em').text(templateVote(data))
+						)
+					)
+				)
+			)
+			.appendTo(htmlContent);
+	}
+	function templateVote(data) {
+		return data.entry.yt$rating.numLikes.replace(/./g, function(m, i, str) {
+			return (i && !((str.length - i) % 3)) ? ',' + m : m;
+		});
+	}
+	function getUrl(id, name) {
+		$.getJSON(getVideoUrl(id))
+		.success(function(data) {
+			videos.push(data);
+			if(videos.length == Object.keys(ids).length)
+				display()
+		});
+	}
+	function display() {
+		videos = videos.sort(function(a, b) {
+			return b.entry.yt$rating.numLikes-a.entry.yt$rating.numLikes;
+		});
+		htmlContent.html('');
+		for(var i=0; i<videos.length; i++) {
+			template(videos[i]);
+		}
+	}
+	</script>
+</body>
+</html>
